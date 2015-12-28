@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html ng-app='skypixelApp' ng-controller='skypixelController'>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <title>DJI LOTTERY</title>
+    </head>
+    <body>
+        <div id="app">
+
+            <section ng-hide="currentPage !== 0" id="home">
+                <div class="logo">
+                    <img src="./img/title.png" />
+                </div>
+
+                <button ng-click="start();" class="button button-start">START</button>
+                <button ng-click="report();" class="button button-report">REPORT</button>
+                <button ng-click="showRecord();" class="button button-record">RECORD</button>
+            </section>
+
+            <section ng-hide="currentPage !== 1" id="form">
+                <div class="logo">
+                    <img src="./img/title.png" />
+                </div>
+                <div ng-hide="!showError" id="error">
+                    Sorry! This account has already participated in the event, please use another account.
+                </div>
+                <div class="text">Please provide your registered DJI account</div>
+                <div class="input">
+                    <img class="icon" src="./img/email.svg" />
+                    <input ng-focus="showError = false" required autocomplete="off" type="email" ng-model="email" id="email" placeholder="E-mail address" />
+                </div>
+                <button ng-disabled="!check()" ng-click="submit();" class="button">SUBMIT</button>
+            </section>
+
+
+            <section ng-hide="currentPage !== 2" id="prizes">
+                <h2>PRIZES</h2>
+                <div class="p3">
+                    <em>PHANTOM 3</em>
+                    <span>STANDARD</span>
+                </div>
+                <div class="money">
+                    <em>$100</em>
+                    <span>DJI coupon</span>
+                </div>
+                <button ng-click="onPrize()" class="button">GO</button>
+            </section>
+
+
+            <section ng-hide="!showProgress" id="progress">
+                <p class="text">Processing......</p>
+            </section>
+
+
+            <section ng-hide="currentPage !== 3" id="win">
+                <div class="logo">
+                    <img src="./img/title.png" />
+                </div>
+                <div ng-hide="!win">
+                    <h3>Congratulations!</h3>
+                    <p ng-hide="win !== 1">You have won the Phantom 3 Standard Coupon. We will send the coupon to your DJI account within one month.</p>
+                    <p ng-hide="win !== 2">You have won the $100 Coupon. We will send the coupon to your DJI account within one month.</p>
+                </div>
+                <div ng-hide="win !== 1" class="p3">
+                    <em>PHANTOM 3</em>
+                    <span>STANDARD</span>
+                </div>
+                <div ng-hide="win !== 2" class="money">
+                    <em>$100</em>
+                    <span>DJI coupon</span>
+                </div>
+                <div ng-hide="win">
+                    <h3>Sorry but you didn’t win, this time! </h3>
+                    <p>Thank you for participating and we encourage you to check out SkyPixel in the future for more amazing events!</p>
+                </div>
+            </section>
+
+
+            <section ng-hide="currentPage !== 4" id="record">
+                <h1>RECORD</h1>
+                <div class="item">
+                    <h6>Total users:  {{joinedUsers}}</h6>
+                </div>
+
+                <div class="item">
+                    <h6>All prizes:</h6>
+                    <p>Phantom 3 Standard: <span class="strong">{{all_prizes.p3}}</span></p>
+                    <p>$100:  <span class="strong">{{all_prizes.coupon}}</span></p>
+                </div>
+                <div class="item">
+                    <h6>The remaining prizes:</h6>
+                    <p>Phantom 3 Standard: <span class="strong">{{remain_prizes.p3}}</span></p>
+                    <p>$100: <span class="strong">{{remain_prizes.coupon}}</span></p>
+                </div>
+            </section>
+        </div>
+        <div ng-click="reset();" class="cancel">BACK</div>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="public/angular.js"></script>
+        <script type="text/javascript" src="public/aws.js"></script>
+        <script type="text/javascript" src="public/main.js"></script>
+    </body>
+</html>

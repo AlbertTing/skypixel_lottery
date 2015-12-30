@@ -1,11 +1,130 @@
-function s3() {
-	  var bucket = new AWS.S3({params: {Bucket: 'skypixel-front-prod'}});
-	  var params = {
-	  	Bucket: 'skypixel-front-prod',
-	  	Key: 'AKIAIRKNYFZBHSS2COTA'
-	  };
+function s3(tablename, tabledata, successCallback, errCallback) {
+	  var bucketName = "skypixel-front-prod";
+		AWS.config.update({
+			accessKeyId: 'AKIAIRKNYFZBHSS2COTA',
+			secretAccessKey: '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',
+			region: 'us-east-1',
+			bucket: bucketName
+		});
 
+	  // var url = 'http://' + bucketName + '.s3.amazonaws.com/skypixel_lottery/' + tablename + '.json';
+
+	  var bucket = window.bucket = new AWS.S3();
+	  var params = {
+		  Bucket: bucketName, /* required */
+		  Key: 'skypixel_lottery/' + tablename + '_' + getISOTimeFormat(true) + '.json', /* required */
+		  // ACL: 'private | public-read | public-read-write | authenticated-read | aws-exec-read | bucket-owner-read | bucket-owner-full-control',
+		  ACL: 'public-read',
+		  Body: JSON.stringify({ "data": tabledata }),
+		  // CacheControl: 'STRING_VALUE',
+		  // ContentDisposition: 'STRING_VALUE',
+		  // ContentEncoding: 'STRING_VALUE',
+		  // ContentLanguage: 'STRING_VALUE',
+		  // ContentLength: 0,
+		  // ContentMD5: 'STRING_VALUE',
+		  // ContentType: 'STRING_VALUE',
+		  // Expires: new Date || 'Wed Dec 31 1969 16:00:00 GMT-0800 (PST)' || 123456789,
+		  // GrantFullControl: 'STRING_VALUE',
+		  // GrantRead: 'STRING_VALUE',
+		  // GrantReadACP: 'STRING_VALUE',
+		  // GrantWriteACP: 'STRING_VALUE',
+		  // Metadata: {
+		  //   someKey: 'STRING_VALUE',
+		  //   /* anotherKey: ... */
+		  // },
+		  // RequestPayer: 'requester',
+		  // SSECustomerAlgorithm: 'STRING_VALUE',
+		  // SSECustomerKey: new Buffer('...') || 'STRING_VALUE',
+		  // SSECustomerKeyMD5: 'STRING_VALUE',
+		  // SSEKMSKeyId: 'STRING_VALUE',
+		  // ServerSideEncryption: 'AES256 | aws:kms',
+		  // StorageClass: 'STANDARD | REDUCED_REDUNDANCY | STANDARD_IA',
+		  // WebsiteRedirectLocation: 'STRING_VALUE'
+	  }
+
+	  bucket.putObject(params, function(err, data) {
+	  	if(err) {
+	  		alert(JSON.stringify(err));
+	  		errCallback(err);
+	  	} else {
+	  		successCallback();
+	  	}
+	  })
+
+		// bucket.HttpRequest({
+		// 	body: JSON.stringify({ "data": tabledata }),
+		// 	method: 'PUT',
+		// 	endpoint: 'http://' + bucketName + '.s3.amazonaws.com',
+		// 	path: '/skypixel_lottery/' + tablename + '.json'
+		// }, function(rs) {
+		// 	alert(JSON.stringify(rs));
+		// }, function(err) {
+		// 	alert(JSON.stringify(err));
+		// });
 }
+
+function convertResults(resultset) {
+	var results = [];
+	for(var i=0,len=resultset.rows.length;i<len;i++) {
+	    var row = resultset.rows.item(i);
+	    var result = {};
+	    for(var key in row) {
+	        result[key] = row[key];
+	    }
+	    results.push(result);
+	}
+	return results;
+}
+
+function backup(db, $q) {
+	var DB = db.open();
+	var defer = $q.defer();
+	var defer1 = $q.defer();
+	var defer2 = $q.defer();
+	var defer3 = $q.defer();
+
+	DB.transaction(function(tx) {
+	    tx.executeSql("select * from t_award_batch", [], function(tx,results) {
+	        var data = convertResults(results);
+	        s3('t_award_batch', data, function() {
+	        	defer1.resolve(data);
+	        }, function() {
+	        	defer1.reject();
+	        });
+	    });
+	}, errorCB);
+
+	DB.transaction(function(tx) {
+	    tx.executeSql("select * from t_award_pool", [], function(tx,results) {
+	        var data = convertResults(results);
+	        s3('t_award_pool', data, function() {
+	        	defer2.resolve(data);
+	        }, function() {
+	        	defer2.reject();
+	        });
+	    });
+	}, errorCB);
+
+	DB.transaction(function(tx) {
+	    tx.executeSql("select * from t_record", [], function(tx,results) {
+	        var data = convertResults(results);
+	        s3('t_record', data, function() {
+	        	defer3.resolve(data);
+	        }, function() {
+	        	defer3.reject();
+	        });
+	    });
+	}, errorCB);
+
+	$q.all(defer1, defer2, defer3).then(function(result) {
+		defer.resolve(result);
+	}, function() {
+		defer.reject();
+	})
+
+	return defer.promise;
+}
+
 
 
 function populateDB(tx) {
@@ -29,7 +148,7 @@ function successCB() {
 	// alert("success!");
 }
 
-function getISOTimeFormat() {
+function getISOTimeFormat(flag) {
 	var date = new Date(),
 		y = date.getFullYear(),
 		m = date.getMonth() + 1,
@@ -37,9 +156,17 @@ function getISOTimeFormat() {
 		h = date.getHours(),
 		M = date.getMinutes(),
 		s = date.getSeconds();
-	return [
+	var res = [
+		[y, m < 10 ? "0" + m : m, d < 10 ? "0" + d : d].join("-"), [h < 10 ? "0" + h : h, M < 10 ? "0" + M : M, s < 10 ? "0" + s : s].join(":")
+	];
+	res =  [
 		[y, m < 10 ? "0" + m : m, d < 10 ? "0" + d : d].join("-"), [h < 10 ? "0" + h : h, M < 10 ? "0" + M : M, s < 10 ? "0" + s : s].join(":")
 	].join(" ");
+
+	if(flag) {
+		res = res.replace(/:/g, '_').replace(/-/g, '_').replace(' ', '_');
+	}
+	return res;
 }
 
 
@@ -304,8 +431,8 @@ angular.module('PhoneGap')
 
 //main
 angular.module('skypixelApp', ['PhoneGap'])
-	.controller('skypixelController', ['$rootScope', '$scope', '$window', '$document', 'Storage', 'PrizePool', '$timeout', 'DB', 'PhoneGap',
-		function($rootScope, $scope, $window, $document, Storage, PrizePool, $timeout, DB, PhoneGap) {
+	.controller('skypixelController', ['$rootScope', '$scope', '$window', '$document', 'Storage', 'PrizePool', '$timeout', 'DB', 'PhoneGap', '$q', '$http',
+		function($rootScope, $scope, $window, $document, Storage, PrizePool, $timeout, DB, PhoneGap, $q, $http) {
 
 			var Model = {
 				email: '',
@@ -317,7 +444,7 @@ angular.module('skypixelApp', ['PhoneGap'])
 				//core options
 				totalUsers: 1000,
 				//test
-				totalUsers: 50,
+				// totalUsers: 50,
 				joinedUsers: 0,
 				all_prizes: {
 					p3: 1,
@@ -404,6 +531,14 @@ angular.module('skypixelApp', ['PhoneGap'])
 
 				start: function() {
 					$scope.currentPage = 1;
+				},
+
+				report: function() {
+					$scope.reporting = true;
+					backup(DB, $q).then(function(result) {
+						$scope.reporting = false;
+						alert('report done');
+					});
 				},
 
 				reset: function() {

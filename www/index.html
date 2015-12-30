@@ -52,10 +52,13 @@
             </section>
 
 
-            <section ng-hide="!showProgress" id="progress">
+            <section ng-hide="!showProgress" id="progress" class="shadow">
                 <p class="text">Processing......</p>
             </section>
 
+            <section ng-hide="!reporting" class="shadow">
+                <p class="text">Reporting......</p>
+            </section>
 
             <section ng-hide="currentPage !== 3" id="win">
                 <div class="logo">

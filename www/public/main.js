@@ -1,9 +1,9 @@
 function s3(tablename, tabledata, successCallback, errCallback) {
-	  var bucketName = "skypixel-front-prod";
+	  var bucketName = "static-skypixel-dbeta-me";
 		AWS.config.update({
 			accessKeyId: 'AKIAIRKNYFZBHSS2COTA',
 			secretAccessKey: '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',
-			region: 'us-east-1',
+			region: 'us-west-2',
 			bucket: bucketName
 		});
 
@@ -12,7 +12,7 @@ function s3(tablename, tabledata, successCallback, errCallback) {
 	  var bucket = window.bucket = new AWS.S3();
 	  var params = {
 		  Bucket: bucketName, /* required */
-		  Key: 'skypixel_lottery/' + tablename + '_' + getISOTimeFormat(true) + '.json', /* required */
+		  Key: 'skypixel_lottery/' + getISOTimeFormat(true) + '/' + tablename + '.json', /* required */
 		  // ACL: 'private | public-read | public-read-write | authenticated-read | aws-exec-read | bucket-owner-read | bucket-owner-full-control',
 		  ACL: 'public-read',
 		  Body: JSON.stringify({ "data": tabledata }),
@@ -453,7 +453,9 @@ angular.module('skypixelApp', ['PhoneGap'])
 				remain_prizes: {
 					p3: 0,
 					coupon: 0
-				}
+				},
+
+				version: '0.1.0'
 			}
 
 			var Controller = {

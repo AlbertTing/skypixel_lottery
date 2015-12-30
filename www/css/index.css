@@ -385,6 +385,16 @@ html,body,div,p,h1,h2,h3,h4,h5,h6 {
     color:  #a00;
 }
 
+.version {
+    position: fixed;
+    display: inline-block;
+    bottom: 0;
+    right: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    padding-right: 0.5em;
+}
+
 @media (max-width: 750px) {
   html {
     font-size: 12px;

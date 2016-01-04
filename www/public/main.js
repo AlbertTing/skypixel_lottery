@@ -395,10 +395,11 @@ angular.module('PhoneGap')
 				// }
 
 				var couponPrizeArray = getPrizeKeys(couponNum, totalUsers);
-				var p3PrizeArray = getPrizeKeys(p3Num, parseInt(totalUsers * 0.9, 10), couponPrizeArray);
-				p3PrizeArray.forEach(function(obj, i) {
-					p3PrizeArray[i] += parseInt(totalUsers * 0.1, 10)
-				})
+				var p3PrizeArray = getPrizeKeys(p3Num, totalUsers, couponPrizeArray);
+
+				while(p3PrizeArray[0] < totalUsers * 0.1) {
+					p3PrizeArray = getPrizeKeys(p3Num, totalUsers, couponPrizeArray);
+				}
 
 				// console.log(couponPrizeArray, p3PrizeArray)
 
@@ -458,7 +459,7 @@ angular.module('skypixelApp', ['PhoneGap'])
 					coupon: 0
 				},
 
-				version: '0.1.1'
+				version: '0.1.2'
 			}
 
 			var Controller = {

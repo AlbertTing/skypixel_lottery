@@ -44,7 +44,7 @@ function s3(tablename, tabledata, successCallback, errCallback) {
 
 	  bucket.putObject(params, function(err, data) {
 	  	if(err) {
-	  		alert(JSON.stringify(err));
+	  		// alert(JSON.stringify(err));
 	  		errCallback(err);
 	  	} else {
 	  		successCallback();
@@ -395,7 +395,10 @@ angular.module('PhoneGap')
 				// }
 
 				var couponPrizeArray = getPrizeKeys(couponNum, totalUsers);
-				var p3PrizeArray = getPrizeKeys(p3Num, totalUsers, couponPrizeArray);
+				var p3PrizeArray = getPrizeKeys(p3Num, parseInt(totalUsers * 0.9, 10), couponPrizeArray);
+				p3PrizeArray.forEach(function(obj, i) {
+					p3PrizeArray[i] += parseInt(totalUsers * 0.1, 10)
+				})
 
 				// console.log(couponPrizeArray, p3PrizeArray)
 
@@ -442,9 +445,9 @@ angular.module('skypixelApp', ['PhoneGap'])
 				win: false,
 
 				//core options
-				totalUsers: 1000,
+				// totalUsers: 1000,
 				//test
-				// totalUsers: 50,
+				totalUsers: 50,
 				joinedUsers: 0,
 				all_prizes: {
 					p3: 1,
@@ -455,7 +458,7 @@ angular.module('skypixelApp', ['PhoneGap'])
 					coupon: 0
 				},
 
-				version: '0.1.0'
+				version: '0.1.1'
 			}
 
 			var Controller = {
@@ -540,13 +543,20 @@ angular.module('skypixelApp', ['PhoneGap'])
 					backup(DB, $q).then(function(result) {
 						$scope.reporting = false;
 						alert('report done');
+					}).catch(function() {
+						$scope.reporting = false;
+						alert('report failed');
 					});
 				},
 
 				reset: function() {
+					var page = 1;
+					if($scope.currentPage == 1) {
+						page = 0;
+					}
 					angular.extend($scope, {
 						email: '',
-						currentPage: 0,
+						currentPage: page,
 						showError: false,
 						showProgress: false,
 						win: false
